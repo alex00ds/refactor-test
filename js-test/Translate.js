@@ -1,5 +1,5 @@
 function handleError(message) {
-    throw {message: message}
+    throw {message: message};
 }
 
 const pluralKeys = [2, 0, 1, 1, 1, 2];
@@ -8,8 +8,8 @@ function plural(num){
    return num % 100 > 4 && num % 100 < 20 ? 2 : pluralKeys[Math.min(num % 10, 5)];
 }
 
-module.exports = class Translate {
-
+module.exports = class Translate
+{
     constructor(options) {
         this.options = options;
         this.lang = '';
@@ -23,7 +23,6 @@ module.exports = class Translate {
      * @returns {Translate}
      */
     addTranslation(data, lang) {
-        // todo check args
         if (typeof(data) != 'object') {
             handleError("Wrong translation data");
         }
