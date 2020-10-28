@@ -1,0 +1,14 @@
+{
+  "name": "klumba/testapp",
+  "description": "",
+  "license": "MIT",
+  "type": "project",
+  "require": {
+    "php": "^7.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Kl\\": "src/"
+    }
+  }
+}
