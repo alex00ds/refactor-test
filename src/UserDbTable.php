@@ -3,9 +3,13 @@
 
 namespace Kl;
 
+use Kl\Traits\Logger;
+use Kl\Interfaces\IUserRepository;
 
-class UserDbTable
+class UserDbTable implements IUserRepository
 {
+    use Logger;
+
     private $storage = [
         [
             'id' => 1,
@@ -24,8 +28,11 @@ class UserDbTable
         ]
     ];
 
-    public function updateUser($data)
+
+
+    public function updateUser(User $user)
     {
+        $data = $user->toArray();
         foreach ($this->storage as $index => $item) {
             if ($item['id'] == $data['id']) {
                 $data['id'] = $item['id'];
@@ -37,7 +44,9 @@ class UserDbTable
 
         $msg = sprintf('User %s not found', $data['id']);
 
-        error_log($msg);
+        $logger = $this->getLogger();
+
+        $logger->reportError($msg);
 
         throw new \Exception($msg);
     }

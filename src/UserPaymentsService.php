@@ -3,36 +3,53 @@
 
 namespace Kl;
 
+use Kl\Traits\Logger;
+use Kl\Interfaces\IUserPaymentRepository;
+use Kl\Interfaces\IUserRepository;
 
 class UserPaymentsService
 {
-    private $userPaymentsDbTable;
+    use Logger;
 
-    private $userDbTable;
+    private $userPaymentRepository;
 
-    public function getUserPaymentsDbTable()
+    private $userRepository;
+
+    public function getUserPaymentRepository()
     {
-        if (!$this->userPaymentsDbTable) {
-            $this->userPaymentsDbTable = new UserPaymentDbTable();
+        if (!$this->userPaymentRepository) {
+            $this->setUserPaymentRepository(new UserPaymentDbTable());
         }
 
-        return $this->userPaymentsDbTable;
+        return $this->userPaymentRepository;
     }
 
-    public function getUserDbTable()
+    public function setUserPaymentRepository(IUserPaymentRepository $repository)
     {
-        if (!$this->userDbTable) {
-            $this->userDbTable = new UserDbTable();
+        $this->userPaymentRepository = $repository;
+    }
+
+    public function getUserRepository()
+    {
+        if (!$this->userRepository) {
+            $this->setUserRepository(new UserDbTable());
         }
 
-        return $this->userDbTable;
+        return $this->userRepository;
+    }
+
+    public function setUserRepository(IUserRepository $repository)
+    {
+        $this->userRepository = $repository;
     }
 
     public function changeBalance(User $user, float $amount)
     {
-        $userDbTable = $this->getUserDbTable();
+        $userDbTable = $this->getUserRepository();
 
-        $userPaymentsDbTable = $this->getUserPaymentsDbTable();
+        $userPaymentsDbTable = $this->getUserPaymentRepository();
+
+        $logger = $this->getLogger();
 
         $paymentType = $amount >= 0 ? 'in' : 'out';
 
@@ -41,11 +58,11 @@ class UserPaymentsService
         $payment = new UserPayment($user->id, $paymentType, $userBalance, abs($amount));
 
         // add payment transaction
-        $paymentId = $userPaymentsDbTable->add($payment->toArray());
+        $paymentId = $userPaymentsDbTable->add($payment);
         if (!$paymentId) {
             $msg = sprintf('Failed to pop up user balance');
 
-            error_log($msg);
+            $logger->reportError($msg);
 
             throw new \Exception($msg);
         }
@@ -53,13 +70,13 @@ class UserPaymentsService
         $user->balance += $amount;
 
         // update user balance in db
-        $userDbTable->updateUser($user->toArray());
+        $userDbTable->updateUser($user);
 
         // send email
         if (!$this->sendEmail($user->email)) {
             $msg = sprintf('Failed to send email for payment id ' . $paymentId);
 
-            error_log($msg);
+            $logger->reportError($msg);
         }
 
         return true;

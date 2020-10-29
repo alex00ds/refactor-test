@@ -3,13 +3,15 @@
 
 namespace Kl;
 
+use Kl\Interfaces\IUserPaymentRepository;
 
-class UserPaymentDbTable
+class UserPaymentDbTable implements IUserPaymentRepository
 {
     private $storage = [];
 
-    public function add($paymentData)
+    public function add(UserPayment $payment)
     {
+        $paymentData = $payment->toArray();
         if (empty($paymentData['id'])) {
             $paymentData['id'] = count($this->storage) + 1;
         }
