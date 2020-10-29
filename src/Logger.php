@@ -18,6 +18,11 @@ class Logger implements ILogger
         return static::$instance;
     }
 
+    public static function setDefaultLogger(ILogger $logger)
+    {
+        static::$instance = $logger;
+    }
+
     public function reportError($msg)
     {
         error_log($msg);
